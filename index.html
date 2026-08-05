@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventário de Lacaios - Plants on Fire</title>
+    <style>
+        :root {
+            --bg-color: #121214;
+            --card-bg: #1e1e22;
+            --border-color: #2e2e34;
+            --text-color: #e1e1e6;
+            --text-dim: #a8a8b3;
+            --accent-color: #00e676;
+            --cost-3: #29b6f6;
+            --cost-5: #ab47bc;
+            --cost-8: #ffa726;
+            --tag-base: #424242;
+            --tag-variant: #5c6bc0;
+            --rarity-rara: #42a5f5;
+            --rarity-epica: #ab47bc;
+            --rarity-lendaria: #ffa726;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        header h1 {
+            color: var(--accent-color);
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: var(--text-dim);
+            font-size: 0.95rem;
+        }
+
+        .controls {
+            background: var(--card-bg);
+            padding: 18px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 25px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .search-box {
+            flex: 1 1 250px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: #16161a;
+            color: var(--text-color);
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        .search-box input:focus {
+            border-color: var(--accent-color);
+        }
+
+        .filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-group label {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        select {
+            padding: 9px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: #16161a;
+            color: var(--text-color);
+            font-size: 0.9rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .stats-bar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color);
+            margin-top: 5px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 18px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            border-color: #44444e;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-id {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            font-weight: bold;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .badges {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .badge {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .badge-cost {
+            color: #000;
+        }
+
+        .badge-cost-3 { background-color: var(--cost-3); }
+        .badge-cost-5 { background-color: var(--cost-5); color: #fff; }
+        .badge-cost-8 { background-color: var(--cost-8); color: #000; }
+
+        .badge-type {
+            background: var(--tag-base);
+            color: #fff;
+        }
+
+        .badge-variant {
+            background: var(--tag-variant);
+            color: #fff;
+        }
+
+        .badge-rarity {
+            border: 1px solid currentColor;
+            background: transparent;
+        }
+
+        .rarity-rara { color: var(--rarity-rara); }
+        .rarity-epica { color: var(--rarity-epica); }
+        .rarity-lendaria { color: var(--rarity-lendaria); }
+
+        .card-effect {
+            font-size: 0.9rem;
+            line-height: 1.4;
+            color: #c5c5d0;
+            background: #16161a;
+            padding: 10px;
+            border-radius: 6px;
+            border-left: 3px solid var(--accent-color);
+            flex-grow: 1;
+        }
+
+        .card-effect strong {
+            color: var(--accent-color);
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px;
+            color: var(--text-dim);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Painel de Lacaios - Plants on Fire</h1>
+        <p>Base de Dados Interativa de Unidades (105 Entradas)</p>
+    </header>
+
+    <div class="controls">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Buscar por nome ou efeito (ex: Pronto, Aura, Solares)...">
+        </div>
+
+        <div class="filter-group">
+            <label for="filterCost">Custo:</label>
+            <select id="filterCost">
+                <option value="all">Todos</option>
+                <option value="3">Custo 3</option>
+                <option value="5">Custo 5</option>
+                <option value="8">Custo 8</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="filterType">Tipo:</label>
+            <select id="filterType">
+                <option value="all">Todos</option>
+                <option value="Base">Base</option>
+                <option value="Variante">Variante</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="filterRarity">Raridade:</label>
+            <select id="filterRarity">
+                <option value="all">Todas</option>
+                <option value="Rara">Rara</option>
+                <option value="Épica">Épica</option>
+                <option value="Lendária">Lendária</option>
+            </select>
+        </div>
+
+        <div class="stats-bar">
+            <span>Exibindo <strong id="visibleCount">105</strong> de <strong>105</strong> unidades</span>
+            <span>Atributos: Custo, Raridade, Tipo e Mecânicas</span>
+        </div>
+    </div>
+
+    <div class="grid" id="cardsGrid"></div>
+
+    <script>
+        const database = [
+            /* --- BLOCO DAS 65 CARTAS BASE (ORDEM ATUALIZADA) --- */
+            { id: 1, name: "Princeso", cost: 3, type: "Base", rarity: "Lendária", effect: "<strong>Pronto:</strong> se tiver menos de 2★, concede +1★. Se tiver 2★ ou mais, é rebaixado para 1★ (conta como promoção)." },
+            { id: 2, name: "Abacadêmico", cost: 3, type: "Base", rarity: "Lendária", effect: "<strong>Pronto:</strong> Temp. aumenta o ATQ deste Lacaio em 50% se tiver 2★ ou em 100% se tiver 3★." },
+            { id: 3, name: "Feno Rolante", cost: 3, type: "Base", rarity: "Lendária", effect: "Unidades de Ataque que este Lacaio invoca: Quantidade -1, Dano +2 e Escudo +3. A sua Vel. Movimento também é aumentada em +12% por cada 5% de PV que falte ao Comandante inimigo." },
+            { id: 4, name: "Mangostino Domador", cost: 3, type: "Base", rarity: "Lendária", effect: "<strong>Pronto:</strong> invoca 2 Porcostins Temp. de 1★ que herdam 35% ATQ." },
+            { id: 5, name: "Sementito", cost: 3, type: "Base", rarity: "Lendária", effect: "Reduz o preço de compra em 2. Temp. aumenta o ATQ dos Sementitos na Loja em 2 e o preço de compra deles Temp. em 1 para cada Sementito comprado." },
+            { id: 6, name: "Cogubomba", cost: 3, type: "Base", rarity: "Lendária", effect: "Ataca todos os inimigos, causando 54% de dano. O Comandante perde 4% de PV máximo. Apenas o inimigo na linha de frente será atacado se o Comandante estiver com o PV abaixo de 4%." },
+            { id: 7, name: "Bebê Lichia", cost: 3, type: "Base", rarity: "Lendária", effect: "<strong>Pronto:</strong> transforma-se em um Lacaio aleatório que não existe em seu deck (continua com o mesmo ranque de ★ e ATQ)." },
+            { id: 8, name: "Rabaneta", cost: 3, type: "Base", rarity: "Lendária", effect: "<strong>Pronto:</strong> aumenta o ATQ deste Lacaio em 2-3." },
+            { id: 9, name: "Cocofrinho", cost: 3, type: "Base", rarity: "Lendária", effect: "<strong>Pronto:</strong> aumenta o preço de venda deste Lacaio em 1 e o ATQ em 1." },
+            { id: 10, name: "Lancelga", cost: 3, type: "Base", rarity: "Épica", effect: "<strong>Pronto:</strong> invoca 1 Pimpolhos 1★ Temp. com 15 de ATQ." },
+            { id: 11, name: "Goiaba Trompetista", cost: 3, type: "Base", rarity: "Épica", effect: "<strong>Pronto:</strong> Temp. aumenta o ATQ de 3 Lacaios aleatórios em 5." },
+            { id: 12, name: "Madre Cereja", cost: 3, type: "Base", rarity: "Épica", effect: "Aumenta o ATQ dos outros Lacaios em 1-2 quando são promovidos." },
+            { id: 13, name: "Abobolito", cost: 3, type: "Base", rarity: "Épica", effect: "<strong>Implantar:</strong> ganha +3-9 de ATQ, mas o Comandante perde 5% do seu PV máximo (a habilidade falha se isso matar o Comandante)." },
+            { id: 14, name: "Verdevida", cost: 3, type: "Base", rarity: "Épica", effect: "<strong>Pronto:</strong> concede +2 de ATQ a 1 outros Lacaios aleatórios. Também cura o Comandante em 2 de PV." },
+            { id: 15, name: "Brigada do Alho", cost: 3, type: "Base", rarity: "Épica", effect: "Aumenta a quantidade de invocações de Unidades de Ataque por este Lacaio em 1. Também aumenta a Vel. Movimento em 10%." },
+            { id: 16, name: "Sentinela Espinhosa", cost: 3, type: "Base", rarity: "Épica", effect: "Ao gastar Moedas Solares, Temp. aumenta o ATQ de Sentinela Espinhosa em 1-2." },
+            { id: 17, name: "Floratendente", cost: 3, type: "Base", rarity: "Épica", effect: "<strong>Ao Comprar:</strong> aumenta o ATQ do próximo Lacaio comprado em 6." },
+            { id: 18, name: "Trombacaxinha", cost: 3, type: "Base", rarity: "Épica", effect: "Este Lacaio ganha 8 de ATQ extra ao ser promovido." },
+            { id: 19, name: "Crisântemo", cost: 3, type: "Base", rarity: "Rara", effect: "<strong>Aura:</strong> aumenta o ATQ do Lacaio localizado 1 espaço acima em 9." },
+            { id: 20, name: "Poderoso Milhão", cost: 3, type: "Base", rarity: "Rara", effect: "Dispara uma rajada de 4 projéteis contra o inimigo, cada um causando 55% de dano." },
+            { id: 21, name: "Mercantata", cost: 3, type: "Base", rarity: "Rara", effect: "<strong>Ao Comprar:</strong> concede 2 atualização(ões) gratuitas da Loja. Os primeiros 4 Mercantata(s) em cada partida custa(m) 1 a menos." },
+            { id: 22, name: "Detetive Maçã", cost: 3, type: "Base", rarity: "Rara", effect: "Ataca 6 inimigos de uma vez, causando 55% de dano." },
+            { id: 38, name: "Astroloquídia", cost: 5, type: "Base", rarity: "Lendária", effect: "<strong>Pronto:</strong> aumenta o ATQ de 1 Lacaios Congelados aleatórios na Loja em 10. Se não houver nenhum, aumenta o ATQ do Lacaio com maior ATQ em 10." },
+            { id: 39, name: "Come-tudo", cost: 5, type: "Base", rarity: "Lendária", effect: "A cada rodada, devora até 2 Lacaios Temp., ganhando 4 de ATQ para cada Lacaio devorado e Temp. 40% do ATQ deles." },
+            { id: 41, name: "Irmãos Laranja", cost: 5, type: "Base", rarity: "Lendária", effect: "<strong>Pronto:</strong> cria 1 clones Temp. que herdam 62% do ATQ deste Lacaio e 1 que herdam 16%." },
+            { id: 42, name: "Orquídea Fantasminha", cost: 5, type: "Base", rarity: "Lendária", effect: "<strong>Pronto:</strong> rouba 5% de ATQ do Lacaio inimigo com o maior ATQ e dá a 1 Lacaio, exceto Orquídea Fantasminha (rouba pelo menos 3 de ATQ)." },
+            { id: 43, name: "Brócolis Presley", cost: 5, type: "Base", rarity: "Lendária", effect: "<strong>Pronto:</strong> Temp. aumenta a VEL. ATQ do Lacaio que possui o maior ATQ em +22%." },
+            { id: 45, name: "Abóbora sem Cabeça", cost: 5, type: "Base", rarity: "Lendária", effect: "<strong>Aura:</strong> este Lacaio ganha +7 de ATQ e +3% de VEL. ATQ para cada 10% de PV que o Comandante não tiver." },
+            { id: 46, name: "Uvartender", cost: 5, type: "Base", rarity: "Lendária", effect: "<strong>Ao Comprar:</strong> os Lacaios na Loja ganham +2 de ATQ. Os primeiros 3 Uvartenders em cada partida custam 1 a menos." },
+            { id: 49, name: "Samuraimelo", cost: 5, type: "Base", rarity: "Lendária", effect: "Ataca todo inimigo que entra em campo, causando 110% de dano." },
+            { id: 50, name: "Dente-de-Leão", cost: 5, type: "Base", rarity: "Lendária", effect: "<strong>Pronto:</strong> Temp. reduz o ATQ de todos os Lacaios inimigos em 5% (não menos que 4)." },
+            { id: 52, name: "Fiscal Pimentel", cost: 5, type: "Base", rarity: "Lendária", effect: "<strong>Implantar:</strong> rebaixa o ranque de ★ do Lacaio alvo em 1 (conta como promoção), mas concede 20% do ATQ do Fiscal Pimentel." },
+            { id: 54, name: "Limazito", cost: 5, type: "Base", rarity: "Lendária", effect: "<strong>Ao comprar um Lacaio:</strong> aumenta o ATQ de 1 Lacaio aleatório em 2-3." },
+            { id: 56, name: "Romãtirador", cost: 5, type: "Base", rarity: "Lendária", effect: "<strong>Mágica (4 s):</strong> faz com que o próximo ataque cause 115% de Dano em Área." },
+            { id: 57, name: "Prof. Nozes", cost: 5, type: "Base", rarity: "Lendária", effect: "Este Lacaio ganha 1 de Pesquisa quando outro Lacaio é promovido. <strong>Pronto:</strong> 225% da Pesquisa deste Lacaio é Temp. distribuída igualmente como ATQ entre todos os outros Lacaios na mesma coluna." },
+            { id: 48, name: "Manga Ninja", cost: 5, type: "Base", rarity: "Lendária", effect: "Aumenta a VEL. ATQ da Manga Ninja em +20% por cada Lacaio único (exceto Manga Ninja) em campo." },
+            { id: 59, name: "Amendoscudo", cost: 5, type: "Base", rarity: "Épica", effect: "Sempre que um Lacaio é promovido, aumenta o ATQ do Lacaio com maior ATQ em +2." },
+            { id: 61, name: "Cenoura Corretora", cost: 5, type: "Base", rarity: "Épica", effect: "<strong>Ao Comprar:</strong> atualiza a Loja com 1 Lacaios de Custo 8." },
+            { id: 62, name: "Bananarangue", cost: 5, type: "Base", rarity: "Épica", effect: "Os ataques ricocheteiam 5x entre os inimigos, causando 16% a menos de dano a cada ricochete." },
+            { id: 63, name: "Dragão Acumulador", cost: 5, type: "Base", rarity: "Épica", effect: "<strong>Aura:</strong> aumenta o ATQ deste Lacaio em 9 para cada 5 Moedas Solares que você possui." },
+            { id: 65, name: "Morcego-de-azevinho", cost: 5, type: "Base", rarity: "Épica", effect: "<strong>Pronto:</strong> Temp. absorve 18% do ATQ de 1 Lacaios inimigos com o maior ATQ. Este Lacaio pode ganhar Temp. até +15 de ATQ desta forma." },
+            { id: 66, name: "Cebardo", cost: 5, type: "Base", rarity: "Épica", effect: "<strong>Aura:</strong> aumenta a VEL. ATQ de todos os Lacaios em +6%." },
+            { id: 67, name: "Melão Matemático", cost: 5, type: "Base", rarity: "Épica", effect: "<strong>Implantar:</strong> aumenta o ATQ do Lacaio alvo em 6 (a potência aumenta em 1 por cada compra nesta partida)." },
+            { id: 58, name: "Inspetor Lanterna", cost: 5, type: "Base", rarity: "Épica", effect: "<strong>Ao promover este Lacaio:</strong> aumenta o ATQ de todos os outros Lacaios em 3." },
+            { id: 71, name: "Padeiro Comilão", cost: 5, type: "Base", rarity: "Épica", effect: "<strong>Pronto:</strong> gera pão em um espaço vazio. Aumenta o ATQ de quem o coletar em 5." },
+            { id: 72, name: "Mirtigélida", cost: 5, type: "Base", rarity: "Épica", effect: "Ataca inimigos em uma pequena área, causando 25% de dano e aplicando lentidão de 28% por 3 s." },
+            { id: 74, name: "Ciclone Folhoso", cost: 5, type: "Base", rarity: "Épica", effect: "<strong>Mágica (5 s):</strong> transfere as 1 Unidades de Ataque com maior PV ao oponente, com 30% de seu PV máximo. Deixa o Lacaio sob efeito de <strong>Soneca</strong>." },
+            { id: 75, name: "Chefe Gengíbrio", cost: 5, type: "Base", rarity: "Épica", effect: "Quando um Lacaio é invocado, 3 outros Lacaios aleatórios <strong>Temp.</strong> ganham +1-2 de ATQ." },
+            { id: 76, name: "Bumbo Poró", cost: 5, type: "Base", rarity: "Rara", effect: "<strong>Aura:</strong> aumenta o ATQ de todos os Lacaios ao redor em 5." },
+            { id: 68, name: "Dr. Repolho", cost: 5, type: "Base", rarity: "Rara", effect: "Quando um Lacaio é promovido: Dr. Repolho ganha +3 de ATQ." },
+            { id: 80, name: "Sir Rosa", cost: 5, type: "Base", rarity: "Rara", effect: "Concede <strong>Temp.</strong> a Lacaios invocados mais 6 ATQ." },
+            { id: 83, name: "Flormerciante", cost: 5, type: "Base", rarity: "Rara", effect: "<strong>Pronto:</strong> Moedas Solares +1. Os primeiros 3 Flormerciantes em cada partida custam 2 a menos." },
+            { id: 78, name: "Cenoura Bomba", cost: 5, type: "Base", rarity: "Rara", effect: "<strong>Implantar:</strong> ao promover este ou qualquer Lacaio, posiciona 1 Cenouras Explosivas em campo, com 130% do ATQ desse Lacaio. As cenouras causam Dano em Área quando o inimigo encosta nelas." },
+            { id: 85, name: "Tobate", cost: 8, type: "Base", rarity: "Lendária", effect: "Sempre que um inimigo é derrotado, aumenta o ATQ deste Lacaio em 5. Ganha mais 5 se este Lacaio derrotar o inimigo." },
+            { id: 86, name: "Xamandragora", cost: 8, type: "Base", rarity: "Lendária", effect: "Concede 23% de ATQ a Lacaios <strong>Temp.</strong> invocados (mínimo de 25)." },
+            { id: 87, name: "Árvore da Luz", cost: 8, type: "Base", rarity: "Lendária", effect: "10 <strong>Máximo de Mana</strong>; 10 de <strong>Custo de Mana</strong>: Ataca 1 inimigos aleatórios e <strong>Temp.</strong> ganha ATQ + 5%. A Árvore da Luz ganha +1 de <strong>Máximo de Mana</strong> para cada ataque de Lacaios de outros tipos." },
+            { id: 88, name: "Morte Rosácea", cost: 8, type: "Base", rarity: "Lendária", effect: "<strong>Pronto:</strong> rebaixa <strong>Temp.</strong> 1 Lacaio inimigo em -1★. Se este Lacaio tiver um ranque de ★ acima daquele que foi rebaixado, o rebaixamento de 1 será permanente. <strong>Aura:</strong> reduz a VEL. ATQ de todos os Lacaios inimigos de 1★ em 10%." },
+            { id: 89, name: "Cajumístico", cost: 8, type: "Base", rarity: "Lendária", effect: "<strong>Pronto:</strong> copia 31% do ATQ do Lacaio com o maior ATQ (excluindo a si mesmo) como bônus de ATQ <strong>Temp.</strong>." },
+            { id: 91, name: "Xamaniza", cost: 8, type: "Base", rarity: "Lendária", effect: "<strong>Pronto:</strong> aumenta o ATQ dos outros Lacaios em +3 (apenas 1 de cada cópia). Concede ATQ +6 se não houver cópias em campo." },
+            { id: 92, name: "Beringênio", cost: 8, type: "Base", rarity: "Lendária", effect: "Cada Moeda Solar dá mais 5 de ATQ aos Beringênios na Loja. O preço de compra é igual às Moedas Solares possuídas no momento (mínimo de 1)." },
+            { id: 93, name: "Valquíris", cost: 8, type: "Base", rarity: "Lendária", effect: "<strong>Pronto:</strong> se o ATQ total do inimigo for maior que o seu, este Lacaio <strong>Temp.</strong> ganhará 50% da diferença de ATQ total." },
+            { id: 84, name: "Melancia Fortona", cost: 8, type: "Base", rarity: "Épica", effect: "Causa 250% de dano contra o chefe inimigo." },
+            { id: 95, name: "Frade Flor", cost: 8, type: "Base", rarity: "Épica", effect: "4 Lacaios aleatórios ganham 1-2 de ATQ quando um Lacaio é promovido." },
+            { id: 97, name: "Alquimelo", cost: 8, type: "Base", rarity: "Épica", effect: "<strong>Implantar:</strong> <strong>Temp.</strong> aumenta o ATQ do Lacaio alvo em 70." },
+            { id: 99, name: "Madame Tulipa", cost: 8, type: "Base", rarity: "Épica", effect: "<strong>Aura:</strong> aumenta o ATQ de Madame Tulipa em +3 para cada Moeda Solar gasta nesta rodada." },
+            { id: 101, name: "Joe Magnata", cost: 8, type: "Base", rarity: "Épica", effect: "<strong>Implantar:</strong> aumenta o ATQ do Lacaio alvo em 12 e gasta todas as Moedas Solares, aumentando o ATQ em 3 para cada moeda gasta." },
+            { id: 102, name: "Solário", cost: 8, type: "Base", rarity: "Épica", effect: "<strong>Pronto:</strong> invoca 1 Lacaios de Custo 3 ou 5 aleatórios do mesmo ranque de ★. Eles recebem 50% do ATQ de Solário." },
+            { id: 104, name: "Espelho Perverso", cost: 8, type: "Base", rarity: "Épica", effect: "Clona as primeiras 4 Unidades de Ataque de cada rodada e transfere elas para o oponente. Clones possuem 15% do PV das originais." },
+            { id: 105, name: "Bolota Bandido", cost: 8, type: "Base", rarity: "Épica", effect: "<strong>Implantar:</strong> rouba ATQ de todos os Lacaios na Loja, ganhando 100% de ATQ." },
+
+            /* --- BLOCO DAS 40 CARTAS VARIANTES (RARIDADES ATUALIZADAS CONFORME BASE) --- */
+            { id: 23, name: "Abacadêmico I", cost: 3, type: "Variante", rarity: "Lendária", effect: "<strong>Implantar:</strong> +140% de ATQ (não inclui efeitos de Aura)." },
+            { id: 24, name: "Sementito I", cost: 3, type: "Variante", rarity: "Lendária", effect: "Ao serem comprados, aumenta o ATQ dos Sementitos na Loja em +3. Se forem vendidos, reduz o ATQ deles em -5." },
+            { id: 25, name: "Bebê Lichia I", cost: 3, type: "Variante", rarity: "Lendária", effect: "<strong>Pronto:</strong> transforma-se em um Lacaio aleatório do campo inimigo (continua com o mesmo ranque de ★ e ATQ do Bebê Lichia) e ganha ATQ +2." },
+            { id: 26, name: "Lancelga I", cost: 3, type: "Variante", rarity: "Épica", effect: "<strong>Pronto:</strong> invoca 1 Pimpolhos 1★ Temp.. Eles ganham +4 de ATQ e +8% de VEL. ATQ para cada Lacaio invocado nesta rodada." },
+            { id: 27, name: "Goiaba Trompetista I", cost: 3, type: "Variante", rarity: "Épica", effect: "<strong>Pronto:</strong> aumenta a VEL. ATQ dos primeiros 3 ataques de todos os Lacaios em +50%." },
+            { id: 28, name: "Madre Cereja II", cost: 3, type: "Variante", rarity: "Épica", effect: "Aumenta o ATQ de Temp. dos outros Lacaios em 4 quando são promovidos." },
+            { id: 29, name: "Brigada do Alho I", cost: 3, type: "Variante", rarity: "Épica", effect: "Aumenta a quantidade de Unidades de Ataque invocadas em 3 e a Vel. Movimento delas em 10%. No final da rodada: Remover (Rodadas de Chefes: Soneca)." },
+            { id: 30, name: "Sentinela Espinhosa I", cost: 3, type: "Variante", rarity: "Épica", effect: "Cada Lacaio comprado concede mais 1-2 de ATQ à próxima Sentinela Espinhosa que você comprar." },
+            { id: 31, name: "Trombacaxinha I", cost: 3, type: "Variante", rarity: "Épica", effect: "Este Lacaio ganha 6 de ATQ extra ao ser promovido. <strong>Pronto:</strong> rebaixa em 1★." },
+            { id: 32, name: "Trombacaxinha II", cost: 3, type: "Variante", rarity: "Épica", effect: "Este Lacaio ganha 16% de ATQ ao ser promovido." },
+            { id: 33, name: "Crisântemo I", cost: 3, type: "Variante", rarity: "Rara", effect: "<strong>Pronto:</strong> aumenta o ATQ do Lacaio localizado 1 espaço acima em 4." },
+            { id: 34, name: "Poderoso Milhão I", cost: 3, type: "Variante", rarity: "Rara", effect: "Dispara uma rajada de 4 projéteis contra o inimigo, cada um causando 55% de dano e causando 36% de lentidão por 2 s." },
+            { id: 35, name: "Poderoso Milhão II", cost: 3, type: "Variante", rarity: "Rara", effect: "Dispara uma rajada de 3 projéteis contra o inimigo, cada um causando 55% de dano. Aumenta a VEL. ATQ deste Lacaio em +15% para cada espaço vazio." },
+            { id: 36, name: "Detetive Maçã I", cost: 3, type: "Variante", rarity: "Rara", effect: "Ataca 6 inimigos de uma vez, causando 55% de dano. Aumenta a VEL. ATQ deste Lacaio em +2% para cada inimigo em campo." },
+            { id: 37, name: "Detetive Maçã II", cost: 3, type: "Variante", rarity: "Rara", effect: "Ataca 4 inimigos aleatórios, causando 55% de dano. Ataca novamente se um inimigo for derrotado (pode ser acionado uma vez a cada 3 s)." },
+            { id: 40, name: "Come-tudo I", cost: 5, type: "Variante", rarity: "Lendária", effect: "Devora até 2 Lacaios Temp. por rodada, e Temp. concede 50% de seu ATQ a 1 outro Lacaio." },
+            { id: 44, name: "Brócolis Presley I", cost: 5, type: "Variante", rarity: "Lendária", effect: "<strong>Pronto:</strong> Temp. aumenta a VEL. ATQ do Lacaio que possui o maior ATQ em +16%. O efeito é dobrado se este for o único Brócolis Presley em campo." },
+            { id: 47, name: "Uvartender I", cost: 5, type: "Variante", rarity: "Lendária", effect: "<strong>Vender:</strong> aumenta Temp. o ATQ dos Lacaios na Loja em +6." },
+            { id: 51, name: "Dente-de-Leão II", cost: 5, type: "Variante", rarity: "Lendária", effect: "<strong>Implantar:</strong> Temp. concede 60% do ATQ deste Lacaio a todos os outros Lacaios (não inclui efeitos de Aura)." },
+            { id: 53, name: "Fiscal Pimentel I", cost: 5, type: "Variante", rarity: "Lendária", effect: "<strong>Mágica (5 s):</strong> Temp. rebaixa 1 Lacaio(s) inimigo(s) aleatório(s) de 2★+ em 1★ e reduz o ATQ deles. A redução do ATQ é igual a 15% do ATQ do Fiscal Pimentel." },
+            { id: 55, name: "Limazito I", cost: 5, type: "Variante", rarity: "Lendária", effect: "Aumenta o ATQ dos Lacaios comprados <strong>Implantar</strong> em +11% (não inclui efeitos de Aura)." },
+            { id: 60, name: "Amendoscudo I", cost: 5, type: "Variante", rarity: "Épica", effect: "<strong>Pronto:</strong> aumenta o ATQ do Lacaio com maior ATQ (exceto este) em +5." },
+            { id: 64, name: "Dragão Acumulador I", cost: 5, type: "Variante", rarity: "Épica", effect: "<strong>Pronto:</strong> aumenta o ATQ em +4 para cada 6 Moeda(s) Solar(es) que você possui." },
+            { id: 69, name: "Dr. Repolho I", cost: 5, type: "Variante", rarity: "Rara", effect: "<strong>Aura:</strong> o ATQ de Dr. Repolho aumenta em 10 para cada Lacaio 3★ em campo." },
+            { id: 70, name: "Inspetor Lanterna I", cost: 5, type: "Variante", rarity: "Épica", effect: "Ao promover este Lacaio, ele ganha +3 de ATQ e +6% de VEL. ATQ de <strong>Temp.</strong> para cada espaço vazio em campo." },
+            { id: 73, name: "Mirtigélida I", cost: 5, type: "Variante", rarity: "Épica", effect: "Inimigos sofrem 40% de lentidão por 4 s ao entrar no campo." },
+            { id: 77, name: "Bumbo Poró I", cost: 5, type: "Variante", rarity: "Rara", effect: "<strong>Aura:</strong> aumenta o ATQ dos Lacaios ao redor em um total de +20 (os Lacaios próximos recebem um bônus de ATQ de valor igual)." },
+            { id: 79, name: "Cenoura Bomba I", cost: 5, type: "Variante", rarity: "Rara", effect: "<strong>Pronto:</strong> posiciona 2 Cenouras Explosivas em campo, com 130% do ATQ desse Lacaio. Quando o inimigo encosta nelas, as cenouras causam Dano em Área e 80% de lentidão por 2 s." },
+            { id: 81, name: "Sir Rosa I", cost: 5, type: "Variante", rarity: "Rara", effect: "<strong>Aura:</strong> este Lacaio <strong>Temp.</strong> ganha +18 de ATQ para cada Lacaio que o inimigo tiver a mais que você." },
+            { id: 82, name: "Sir Rosa II", cost: 5, type: "Variante", rarity: "Rara", effect: "Concede a Lacaios <strong>Temp.</strong> invocados 50% do ATQ de Sir Rosa." },
+            { id: 90, name: "Cajumístico I", cost: 8, type: "Variante", rarity: "Lendária", effect: "<strong>Implantar:</strong> promove para 3★. Este Lacaio ganha 48% do ATQ do Lacaio com o maior ATQ." },
+            { id: 94, name: "Melancia Fortona I", cost: 8, type: "Variante", rarity: "Épica", effect: "<strong>Pronto:</strong> aumenta o ATQ deste Lacaio em 14%." },
+            { id: 96, name: "Frade Flor I", cost: 8, type: "Variante", rarity: "Épica", effect: "<strong>Aura:</strong> aumenta o ATQ de todos os Lacaios 3★ em 11." },
+            { id: 98, name: "Alquimelo I", cost: 8, type: "Variante", rarity: "Épica", effect: "<strong>Implantar:</strong> <strong>Temp.</strong> aumenta o ATQ do Lacaio alvo em 25. O efeito aumenta em 1 para cada Lacaio invocado nesta partida." },
+            { id: 100, name: "Madame Tulipa I", cost: 8, type: "Variante", rarity: "Épica", effect: "<strong>Pronto:</strong> aumenta o ATQ de Madame Tulipa em 3 para cada 3 Moedas Solares gastas nesta rodada." },
+            { id: 103, name: "Solário I", cost: 8, type: "Variante", rarity: "Épica", effect: "<strong>Implantar:</strong> Moedas Solares +2. <strong>Pronto:</strong> Moedas Solares +2." }
+        ];
+
+        const cardsGrid = document.getElementById('cardsGrid');
+        const searchInput = document.getElementById('searchInput');
+        const filterCost = document.getElementById('filterCost');
+        const filterType = document.getElementById('filterType');
+        const filterRarity = document.getElementById('filterRarity');
+        const visibleCount = document.getElementById('visibleCount');
+
+        function renderCards() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const costVal = filterCost.value;
+            const typeVal = filterType.value;
+            const rarityVal = filterRarity.value;
+
+            let count = 0;
+            cardsGrid.innerHTML = '';
+
+            database.forEach(card => {
+                const matchesSearch = card.name.toLowerCase().includes(searchTerm) || card.effect.toLowerCase().includes(searchTerm);
+                const matchesCost = costVal === 'all' || card.cost.toString() === costVal;
+                const matchesType = typeVal === 'all' || card.type === typeVal;
+                const matchesRarity = rarityVal === 'all' || card.rarity === rarityVal;
+
+                if (matchesSearch && matchesCost && matchesType && matchesRarity) {
+                    count++;
+                    const cardEl = document.createElement('div');
+                    cardEl.className = 'card';
+                    
+                    const rarityClass = `rarity-${card.rarity.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')}`;
+
+                    cardEl.innerHTML = `
+                        <div class="card-header">
+                            <span class="card-id">#${card.id}</span>
+                            <div class="badges">
+                                <span class="badge badge-cost badge-cost-${card.cost}">⚡ ${card.cost}</span>
+                                <span class="badge ${card.type === 'Base' ? 'badge-type' : 'badge-variant'}">${card.type}</span>
+                                <span class="badge badge-rarity ${rarityClass}">${card.rarity}</span>
+                            </div>
+                        </div>
+                        <div class="card-title">${card.name}</div>
+                        <div class="card-effect">${card.effect}</div>
+                    `;
+                    cardsGrid.appendChild(cardEl);
+                }
+            });
+
+            visibleCount.innerText = count;
+
+            if (count === 0) {
+                cardsGrid.innerHTML = `<div class="no-results">Nenhum lacaio encontrado com os filtros selecionados.</div>`;
+            }
+        }
+
+        searchInput.addEventListener('input', renderCards);
+        filterCost.addEventListener('change', renderCards);
+        filterType.addEventListener('change', renderCards);
+        filterRarity.addEventListener('change', renderCards);
+
+        renderCards();
+    </script>
+</body>
+</html>
